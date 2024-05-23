@@ -1,5 +1,7 @@
 import traceback
 from flask import request, jsonify, Blueprint
+from pydantic import ValidationError
+from models.city import City
 from repository.Neo4jRepository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
@@ -27,14 +29,15 @@ def create_city():
     if not data:
         return jsonify({"message": "No data provided!"}), 400
     
-    name = data.get("name")
+    try:
+        city = City(**data)
+    except ValidationError as e:
+        return jsonify({"message": "Invalid data!", "errors": e.errors()}), 400
 
     try:
-        repository.create_city(name)
+        repository.create_city(city.name, city.population, city.year_first_mentioned)
 
-        return jsonify({"message": "City created successfully!", "data": name}), 200
+        return jsonify({"message": "City created successfully!", "data": city.name}), 200
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": "Failed to create city.", "data": str(e), "trace": tb}), 500
-
-    #return jsonify({"message": "City created!"})

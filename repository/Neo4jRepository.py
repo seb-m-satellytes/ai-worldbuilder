@@ -23,13 +23,21 @@ class Neo4jRepository:
         except Exception as e:
             raise e
 
-    def create_city(self, name):
+    def create_city(
+            self, 
+            name, 
+            population, 
+            year_first_mentioned):
       try:
          query = """
-          CREATE (city:City {name: $name})
+          CREATE (city:City {name: $name, population: $population, year_first_mentioned: $year_first_mentioned})
           RETURN city
           """
-         return self.driver.execute_query(query, name=name, database_=database)
+         return self.driver.execute_query(query, 
+                                          name=name, 
+                                          population=population, 
+                                          year_first_mentioned=year_first_mentioned, 
+                                          database_=database)
       except Exception as e:
          raise e
       
