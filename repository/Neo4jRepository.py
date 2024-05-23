@@ -11,7 +11,15 @@ class Neo4jRepository:
             MATCH (city:City)
             RETURN city
             """
-            result = self.driver.execute_query(query, database=database)
+            records, summary, keys = self.driver.execute_query(query, database=database)
+
+            cities = []
+            
+            for record in records:
+                city_properties = record.data()["city"]
+                cities.append(city_properties)
+            return cities
+
         except Exception as e:
             raise e
 

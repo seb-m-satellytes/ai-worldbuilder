@@ -9,7 +9,7 @@ city_blueprint = Blueprint('city', __name__)
 @city_blueprint.route("/cities", methods=['GET'])
 def get_cities():
     try:
-        cities, _, _ = repository.get_cities()
+        cities = repository.get_cities()
 
         if cities:
             return jsonify({"message": "Cities found!", "data": cities}), 200
