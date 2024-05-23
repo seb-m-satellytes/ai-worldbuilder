@@ -2,13 +2,14 @@ import logging
 import os
 import sys
 from flask import Flask
-from controllers import healthcheck_controller, cities_controller
+from controllers import healthcheck_controller, cities_controller, countries_controller
 from utils.database import driver
 
 app = Flask(__name__)
 
 app.register_blueprint(healthcheck_controller.healthcheck_blueprint, url_prefix='/api/v1')
 app.register_blueprint(cities_controller.city_blueprint, url_prefix='/api/v1')
+app.register_blueprint(countries_controller.country_blueprint, url_prefix='/api/v1')
 
 if __name__ == "__main__":
     handler = logging.StreamHandler(sys.stdout)
