@@ -3,15 +3,18 @@ import math
 import uuid
 from models.country import Country
     
-def generate_country():
-    size_min, size_max, size_skew = 300, 10000000, 0.58
-    population_min, population_max = 25000, 500000000
-    density_min, density_max = 10, 20000
+def generate_country(remaining_land_area):
+    size_min, size_max, size_skew = 300, 10_000_000, 0.58
+    population_min, population_max = 25_000, 500_000_000
+    density_min, density_max = 10, 20_000
 
     # Generate random country size (using log-normal distribution)
     size_mu = math.log(size_min) + (math.log(size_max) - math.log(size_min)) * (1 - size_skew)
     size_sigma = (math.log(size_max) - math.log(size_min)) * size_skew
     size = math.exp(random.normalvariate(size_mu, size_sigma))
+
+    if size > remaining_land_area:
+        size = remaining_land_area
 
     # Generate random population density (using log-normal distribution)
     density_mu = math.log((density_min + density_max) / 2)
