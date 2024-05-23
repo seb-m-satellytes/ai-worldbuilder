@@ -1,4 +1,3 @@
-import traceback
 from flask import request, jsonify, Blueprint
 from controllers.shared import shared_get_nodes, shared_create_node
 from models.city import City
@@ -15,4 +14,4 @@ def get_cities():
     
 @city_blueprint.route("/cities", methods=['POST'])
 def create_city():
-   return shared_create_node(City)
+   return shared_create_node(request, City)

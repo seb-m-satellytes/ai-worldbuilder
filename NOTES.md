@@ -1,10 +1,22 @@
-country
-├── region
+Country size:
+- max 10 000 000 sqkm
+- min 300 sqkm
+
+Country density:
+- max 20 000 people/sqkm
+- min 10 person/sqkm
+
+Country population:
+- max 500 000 000 people
+- min 25 000 people
+
+continent (o)
+-
+country (o)
+├── region (o)
 │   ├── metropolis
-│   │   ├── neighborhood
-│   │   │   └── block
-│   │   ├── district
-│   │   │   └── precinct
+│   │   ├── district (o)
+│   │   │   └── neighborhood
 │   │   ├── citizen
 │   │   ├── infrastructure
 │   │   │   ├── transportation
@@ -30,11 +42,9 @@ country
 │   │       └── financial institution
 │   │           ├── bank
 │   │           └── stock exchange
-│   ├── city
-│   │   ├── neighborhood
-│   │   │   └── block
-│   │   ├── district
-│   │   │   └── precinct
+│   ├── city (o)
+│   │   ├── district (o)
+│   │   │   └── neighborhood
 │   │   ├── citizen
 │   │   ├── infrastructure
 │   │   │   ├── transportation

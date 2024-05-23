@@ -15,4 +15,4 @@ def get_countries():
     
 @country_blueprint.route("/countries", methods=['POST'])
 def create_country():
-    return shared_create_node(Country)
+    return shared_create_node(request, Country)

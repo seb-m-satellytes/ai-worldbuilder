@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 
 class Country(BaseModel):
-    name: str
-    size: Optional[int]
-   
+    world_code: str
+    name: Optional[str] = None
+    size: Optional[int] = None
+    population: Optional[int] = None
+    density: Optional[int] = None
+
+
