@@ -5,7 +5,7 @@ from models.region import Region
 
 def generate_regions(country_size: int, country_population: int):
     if country_size < 1000:
-        return None
+        regions_min, regions_max = 1, 1
     if country_size < 10_000:
         regions_min, regions_max = 1, 3
     elif country_size < 100_000:

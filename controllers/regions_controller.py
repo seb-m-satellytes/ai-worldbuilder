@@ -16,3 +16,5 @@ def get_regions():
 @region_blueprint.route("/regions", methods=['POST'])
 def create_region():
    return shared_create_node(request, Region)
+
+

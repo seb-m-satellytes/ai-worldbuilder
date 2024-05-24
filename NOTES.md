@@ -10,6 +10,19 @@ Country population:
 - max 500 000 000 people
 - min 25 000 people
 
+country_size < 1000 => regions_min, regions_max = 1, 1
+country_size < 10_000 => regions_min, regions_max = 1, 3
+country_size < 100_000 => regions_min, regions_max = 3, 12
+country_size < 1_000_000 => regions_min, regions_max = 4, 24
+regions_min, regions_max = 5, 36
+
+metropolis 1_000_000+
+city 100_000-1_000_000
+town 10_000-100_000
+
+
+world (o)
+-
 continent (o)
 -
 country (o)

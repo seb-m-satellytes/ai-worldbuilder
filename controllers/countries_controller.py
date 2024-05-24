@@ -22,9 +22,9 @@ def get_countries():
 def create_country():
     return shared_create_node(request, Country)
 
-@country_blueprint.route("/countries/<string:world_code>", methods=['DELETE'])
-def delete_country(world_code: str):
-    return shared_delete_node(Country, world_code)
+@country_blueprint.route("/countries/<string:country_id>", methods=['DELETE'])
+def delete_country(country_id: str):
+    return shared_delete_node(Country, country_id)
 
 @country_blueprint.route("/countries", methods=['DELETE'])
 def delete_countries():
@@ -51,25 +51,25 @@ def get_regions(country_id: str):
         tb = traceback.format_exc()
         return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
 
-@country_blueprint.route("/countries/<string:world_code>/generate_regions", methods=['POST'])
-def generate_regions_route(world_code):
+@country_blueprint.route("/countries/<string:country_id>/generate_regions", methods=['POST'])
+def generate_regions_route(country_id):
     try:
-        country = repository.get_node_by_id(Country, world_code)
+        country = repository.get_node_by_id(Country, country_id)
         regions = generate_regions(country.get("size"), country.get("population"))
         
         for region in regions:
             repository.create_node(region)
-            repository.create_relationship(Country, world_code, Region, region.world_code, "HAS_REGION")
+            repository.create_relationship(Country, country_id, Region, region.world_code, "HAS_REGION")
             
         return jsonify({"message": "Regions generated successfully!", "data": len(regions)}), 200
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": str(e), "trace": tb}), 500
     
-@country_blueprint.route("/countries/<string:world_code>/regions", methods=['DELETE'])
-def delete_regions(world_code: str):
+@country_blueprint.route("/countries/<string:country_id>/regions", methods=['DELETE'])
+def delete_regions(country_id: str):
     try:
-        repository.delete_children_with_relationship(Country, world_code, Region, "HAS_REGION")
+        repository.delete_children_with_relationship(Country, country_id, Region, "HAS_REGION")
         return jsonify({"message": "Regions deleted successfully!"}), 200
     except Exception as e:
         tb = traceback.format_exc()
