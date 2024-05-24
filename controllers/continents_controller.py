@@ -16,3 +16,12 @@ def get_continents():
 @continent_blueprint.route("/continents", methods=['POST'])
 def create_continent():
    return shared_create_node(request, Continent)
+
+@continent_blueprint.route("/continents/<string:continent_id>", methods=['DELETE'])
+def delete_continent(continent_id: str):
+    try:
+        repository.delete_node(Continent, continent_id)
+        return jsonify({"message": "Continent deleted successfully!"}), 200
+    except Exception as e:
+        tb = traceback.format_exc()
+        return jsonify({"message": str(e), "trace": tb}), 500

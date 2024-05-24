@@ -29,9 +29,9 @@ def generate_country(remaining_land_area):
         return Country(
             world_code=str(uuid.uuid4()),
             name=None,
-            size=round(size),
-            population=round(population),
-            density=round(density)
+            size=int(round(size)),
+            population=int(round(population)),
+            density=int(round(density))
         )
     else:
         return None

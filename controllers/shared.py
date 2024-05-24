@@ -25,7 +25,7 @@ def shared_get_nodes(model_class: Type[BaseModel]):
         nodes = repository.get_nodes(model_class)
 
         if nodes:
-            return jsonify({"message": "Found nodes.", "data": nodes}), 200
+            return jsonify({"message": f"Found {len(nodes)} nodes.", "data": nodes}), 200
         else:
             return jsonify({"message": "No results found!", "data": []}), 404
     except Exception as e:

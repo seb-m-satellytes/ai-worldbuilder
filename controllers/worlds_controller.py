@@ -3,6 +3,7 @@ from flask import request, jsonify, Blueprint
 from controllers.shared import shared_get_nodes, shared_create_node
 from models.world import World
 from models.continent import Continent
+from models.country import Country
 from generators.continent import generate_continents
 from repository.Neo4jRepository import Neo4jRepository
 
@@ -29,6 +30,10 @@ def generate_continents_route(world_id: str):
             del continent_without_countries.countries
             repository.create_node(continent_without_countries)
             repository.create_relationship(World, world_id, Continent, continent.world_code, "HAS_CONTINENT")
+            
+            for country in continent.countries:
+                repository.create_node(country)
+                repository.create_relationship(Continent, continent.world_code, Country, country.world_code, "HAS_COUNTRY")
         
         return jsonify({"message": "Continents generated successfully!", "data": len(continents)}), 200
     except Exception as e:
