@@ -5,7 +5,7 @@ from models.world import World
 from models.continent import Continent
 from models.country import Country
 from generators.continent import generate_continents
-from repository.Neo4jRepository import Neo4jRepository
+from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
 

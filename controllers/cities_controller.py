@@ -1,7 +1,7 @@
 from flask import request, jsonify, Blueprint
 from controllers.shared import shared_get_nodes, shared_create_node
 from models.city import City
-from repository.Neo4jRepository import Neo4jRepository
+from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
 

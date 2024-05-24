@@ -4,7 +4,7 @@ from flask import request, jsonify
 from pydantic import ValidationError
 from pydantic import BaseModel
 from typing import Type
-from repository.Neo4jRepository import Neo4jRepository
+from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
 

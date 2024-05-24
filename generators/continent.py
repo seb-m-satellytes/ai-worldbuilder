@@ -8,7 +8,7 @@ import uuid
 from generators.country import generate_country
 from models.continent import Continent
 from controllers.shared import shared_create_node
-from repository.Neo4jRepository import Neo4jRepository
+from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
 
