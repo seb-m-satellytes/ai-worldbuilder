@@ -1,5 +1,5 @@
-import numpy as np
 import random
+import numpy as np
 
 def select_regional_type():
     regions = {
@@ -23,34 +23,47 @@ def select_regional_type():
     # Select a random regional type from the available types
     selected_type = random.choice(list(regions.keys()))
     return regions[selected_type]
-    
 
-def distribute_population(total_population: int):
-    regional_type = select_regional_type()
-    metropolitan_population = total_population * random.uniform(regional_type["metropolis"]["min"], regional_type["metropolis"]["max"])
-    metropolis_base_population = 1_500_000
+
+def calculate_population(total_population, category, regional_type):
+    return total_population * random.uniform(regional_type[category]["min"], regional_type[category]["max"])
+
+
+def distribute_population_in_category(base_population, stddev, num_units):
+    population_values = np.random.normal(base_population, stddev, num_units)
     
+    # Ensure all values are positive
+    while any(population_values <= 0):
+        population_values = np.where(population_values <= 0, np.random.normal(base_population, stddev, 1), population_values)
+    
+    return population_values
+
+
+def print_distribution_info(category, units, total_population, distributed_population):
+    percentage = distributed_population / total_population
+    print(f"{category.capitalize()}: {len(units)} with a total of {distributed_population} people ({percentage:.2f}%)")
+    return percentage
+
+
+def distribute_metropolises(total_population, regional_type):
+    metropolitan_population = calculate_population(total_population, "metropolis", regional_type)
+    metropolis_base_population = 1_500_000
     no_of_new_metropolises = round(metropolitan_population / metropolis_base_population)
     
     metropolises = []
-    left_to_distribute = total_population
     metropolitan_population_absolute = 0
 
     if no_of_new_metropolises > 0:
-        new_metropolises = np.random.normal(metropolis_base_population, 350_000, no_of_new_metropolises)
-        
+        new_metropolises = distribute_population_in_category(metropolis_base_population, 350_000, no_of_new_metropolises)
         for new_metropolis in new_metropolises:
             metropolises.append(round(new_metropolis))
-            left_to_distribute -= round(new_metropolis)
             metropolitan_population_absolute += round(new_metropolis)
-        
-        met_perc = metropolitan_population_absolute / total_population
-    else:
-        met_perc = 0
     
-    print(f"Metropolises: {len(metropolises)} with a total of {metropolitan_population_absolute} people ( {met_perc:2f} %)")
-    
-    cityish_population = left_to_distribute * random.uniform(regional_type["city"]["min"], regional_type["city"]["max"])
+    return metropolises, metropolitan_population_absolute
+
+
+def distribute_cities(total_population, regional_type):
+    cityish_population = calculate_population(total_population, "city", regional_type)
     cityish_base_population = 200_000
     no_of_new_cities = round(cityish_population / cityish_base_population)
     
@@ -58,20 +71,16 @@ def distribute_population(total_population: int):
     cityish_population_absolute = 0
     
     if no_of_new_cities > 0:
-        new_cities = np.random.normal(cityish_base_population, 50_000, no_of_new_cities)
-        
+        new_cities = distribute_population_in_category(cityish_base_population, 50_000, no_of_new_cities)
         for new_city in new_cities:
             cities.append(round(new_city))
-            left_to_distribute -= round(new_city)
             cityish_population_absolute += round(new_city)
-        
-        cit_perc = cityish_population_absolute / total_population
-    else:
-        cit_perc = 0
-        
-    print(f"Cities: {len(cities)} with a total of {cityish_population_absolute} people ( {cit_perc:2f} %)")
     
-    townish_population = left_to_distribute * random.uniform(regional_type["town"]["min"], regional_type["town"]["max"])
+    return cities, cityish_population_absolute
+
+
+def distribute_towns(total_population, regional_type):
+    townish_population = calculate_population(total_population, "town", regional_type)
     town_base_population = 20_000
     no_of_new_towns = round(townish_population / town_base_population)
     
@@ -79,69 +88,52 @@ def distribute_population(total_population: int):
     townish_population_absolute = 0
     
     if no_of_new_towns > 0:
-        new_towns = np.random.normal(town_base_population, 5_000, no_of_new_towns)
-        
+        new_towns = distribute_population_in_category(town_base_population, 5_000, no_of_new_towns)
         for new_town in new_towns:
             towns.append(round(new_town))
-            left_to_distribute -= round(new_town)
             townish_population_absolute += round(new_town)
-        
-        town_perc = townish_population_absolute / total_population
-    else:
-        town_perc = 0
-        
-    print(f"Towns: {len(towns)} with a total of {townish_population_absolute} people ( {town_perc:2f} %)")
+    
+    return towns, townish_population_absolute
 
-    villages_population = left_to_distribute
+
+def distribute_villages(total_population):
     village_base_population = 2000
-    no_of_new_villages = round(villages_population / village_base_population)
+    no_of_new_villages = round(total_population / village_base_population)
     
     villages = []
     village_population_absolute = 0
     
     if no_of_new_villages > 0:
-        new_villages = np.random.normal(village_base_population, 500, no_of_new_villages)
-        
+        new_villages = distribute_population_in_category(village_base_population, 850, no_of_new_villages)
         for new_village in new_villages:
             villages.append(round(new_village))
-            left_to_distribute -= round(new_village)
             village_population_absolute += round(new_village)
-        
-        vil_perc = village_population_absolute / total_population
-    else:
-        vil_perc = 0
-        
-    print(f"Villages: {len(villages)} with a total of {village_population_absolute} people ( {vil_perc:2f} %)")
     
-    print(f"{met_perc + cit_perc + town_perc + vil_perc}")
-    return ""
-   
-    
-    if total_population < 10_000:
-        towns = max(1, round(total_population / 1_000))
-    else:
-        metropolises = max(1, round(metropolises_population / 1_000_000))
-        # Assuming a city has 100,000 people
-        cities = max(1, round(cities_population / 100_000))
-        # Assuming a town has 10,000 people
-        towns = max(1, round(towns_population / 10_000))
-        # Assuming a village has 100 people
-        villages = max(1, round(villages_population / 100))
-    
+    return villages, village_population_absolute
 
-    print(f"Metropolises: {metropolises} with {metropolises_population} people")
-    print(f"Cities: {cities} with {cities_population} people")
-    print(f"Towns: {towns} with {towns_population} people")
-    print(f"Villages: {villages} with {villages_population} people")
-    
-distribute_population(129_170)
-distribute_population(629_170)
-distribute_population(1_129_170)
-distribute_population(2_129_170)
-distribute_population(4_129_170)
-distribute_population(8_129_170)
-distribute_population(16_129_170)
-distribute_population(32_129_170)
-distribute_population(64_129_170)
-distribute_population(128_129_170)
 
+def distribute_population(total_population: int):
+    regional_type = select_regional_type()
+    
+    metropolises, metropolitan_population_absolute = distribute_metropolises(total_population, regional_type)
+    left_to_distribute = total_population - metropolitan_population_absolute
+    
+    cities, cityish_population_absolute = distribute_cities(left_to_distribute, regional_type)
+    left_to_distribute -= cityish_population_absolute
+    
+    towns, townish_population_absolute = distribute_towns(left_to_distribute, regional_type)
+    left_to_distribute -= townish_population_absolute
+    
+    villages, village_population_absolute = distribute_villages(left_to_distribute)
+    
+    met_perc = print_distribution_info("metropolises", metropolises, total_population, metropolitan_population_absolute)
+    cit_perc = print_distribution_info("cities", cities, total_population, cityish_population_absolute)
+    town_perc = print_distribution_info("towns", towns, total_population, townish_population_absolute)
+    vil_perc = print_distribution_info("villages", villages, total_population, village_population_absolute)
+    
+    print(f"Total: {met_perc + cit_perc + town_perc + vil_perc:.2f}%")
+    
+    return [metropolises, cities, towns, villages]
+
+
+# distribute_population(32_129_170)

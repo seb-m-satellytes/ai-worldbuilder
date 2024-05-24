@@ -7,23 +7,25 @@ from controllers.cities_controller import city_blueprint
 from controllers.countries_controller import country_blueprint
 from controllers.worlds_controller import world_blueprint
 from controllers.continents_controller import continent_blueprint
+from controllers.regions_controller import region_blueprint
 from utils.database import driver
 
 app = Flask(__name__)
 
 URL_PREFIX = '/api/v1'
 
-def register_blueprints(app):
+def register_blueprints(app_instance):
     blueprints = [
         (healthcheck_blueprint, URL_PREFIX),
         (city_blueprint, URL_PREFIX),
         (country_blueprint, URL_PREFIX),
         (world_blueprint, URL_PREFIX),
-        (continent_blueprint, URL_PREFIX)
+        (continent_blueprint, URL_PREFIX),
+        (region_blueprint, URL_PREFIX)
     ]
 
     for blueprint, url_prefix in blueprints:
-        app.register_blueprint(blueprint, url_prefix=url_prefix)
+        app_instance.register_blueprint(blueprint, url_prefix=url_prefix)
 
 register_blueprints(app)
 
