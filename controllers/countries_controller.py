@@ -30,6 +30,27 @@ def delete_country(world_code: str):
 def delete_countries():
     return shared_delete_all_nodes(Country)
 
+@country_blueprint.route("/countries/<string:country_id>/regions", methods=['GET'])
+def get_regions(country_id: str):
+    try:
+        # Retrieve the continent from the database
+        country = repository.get_node_by_id(Country, country_id)
+        
+        if country is None:
+            return jsonify({'error': 'Country not found'}), 404
+                
+        # Retrieve all regions of the country
+        node_id = country.get('world_code')
+        regions = repository.get_related_nodes(Country, node_id, 'HAS_REGION')
+                
+        if regions:
+            return jsonify({"message": f"Found {len(regions)} regions.", "data": regions}), 200
+            
+        return jsonify({"message": "No results found!", "data": []}), 404   
+    except Exception as e:
+        tb = traceback.format_exc()
+        return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
+
 @country_blueprint.route("/countries/<string:world_code>/generate_regions", methods=['POST'])
 def generate_regions_route(world_code):
     try:

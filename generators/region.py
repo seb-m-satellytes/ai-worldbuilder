@@ -1,5 +1,6 @@
 import random
 import uuid
+import numpy as np
 from models.region import Region
 
 def generate_regions(country_size: int, country_population: int):

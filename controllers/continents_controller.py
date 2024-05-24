@@ -44,8 +44,8 @@ def get_countries(continent_id: str):
                 
         if countries:
             return jsonify({"message": f"Found {len(countries)} countries.", "data": countries}), 200
-        else:
-            return jsonify({"message": "No results found!", "data": []}), 404   
+        
+        return jsonify({"message": "No results found!", "data": []}), 404   
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
