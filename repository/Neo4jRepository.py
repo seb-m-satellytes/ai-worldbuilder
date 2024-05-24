@@ -39,3 +39,29 @@ class Neo4jRepository:
             return self.driver.execute_query(query, **attributes, database_=database)
         except Exception as e:
             raise e
+
+    def delete_node(self, model_class: Type[BaseModel], world_code: str):
+        try:
+            model_name = model_class.__name__
+
+            query = f"""
+            MATCH (node:{model_name} {{world_code: $world_code}})
+            DETACH DELETE node
+            """
+            return self.driver.execute_query(query, world_code=world_code, database_=database)
+        except Exception as e:
+            raise e
+
+    def create_relationship(self, from_model_class: Type[BaseModel], from_code: str, to_model_class: Type[BaseModel], to_code: str, relationship: str):
+        try:
+            from_model_name = from_model_class.__name__
+            to_model_name = to_model_class.__name__
+
+            query = f"""
+            MATCH (from:{from_model_name} {{world_code: $from_code}})
+            MATCH (to:{to_model_name} {{world_code: $to_code}})
+            CREATE (from)-[:{relationship}]->(to)
+            """
+            return self.driver.execute_query(query, from_code=from_code, to_code=to_code, database_=database)
+        except Exception as e:
+            raise e

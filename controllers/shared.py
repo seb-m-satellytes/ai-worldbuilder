@@ -1,9 +1,10 @@
 import traceback
+import uuid
 from flask import request, jsonify
-from repository.Neo4jRepository import Neo4jRepository
 from pydantic import ValidationError
 from pydantic import BaseModel
 from typing import Type
+from repository.Neo4jRepository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
 
@@ -39,6 +40,8 @@ def shared_create_node(request, model_class: Type[BaseModel]):
         return jsonify({"message": str(e)}), 400
    
     try:
+        if not new_node.world_code:
+            new_node.world_code = str(uuid.uuid4())
         repository.create_node(new_node)
 
         return jsonify({"message": "Node created successfully!"}), 200

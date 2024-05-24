@@ -1,12 +1,16 @@
-import sys
+""" import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+ """
 import random
-from country import generate_country
+import uuid
+from generators.country import generate_country
 from models.continent import Continent
+from controllers.shared import shared_create_node
+from repository.Neo4jRepository import Neo4jRepository
 
+repository: Neo4jRepository = Neo4jRepository()
 
 def allocate_minimum_sizes(num_continents, min_continent_size, total_land_area):
     continents = [min_continent_size] * num_continents
@@ -23,19 +27,39 @@ def distribute_remaining_land(continents, remaining_land_area):
             remaining_land_area -= allocation
     return continents
 
-def generate_continents_by_area(total_land_area, min_continent_size=1_000_000):
-    num_continents = random.randint(2, 7)
+def redistribute_excess_area(continents, max_continent_area):
+    excess_area = 0
+    for i in range(len(continents)):
+        if continents[i] > max_continent_area:
+            excess_area += continents[i] - max_continent_area
+            continents[i] = max_continent_area
     
+    while excess_area > 0:
+        for i in range(len(continents)):
+            if excess_area <= 0:
+                break
+            allocation = min(random.uniform(0, excess_area), excess_area)
+            if continents[i] + allocation <= max_continent_area:
+                continents[i] += allocation
+                excess_area -= allocation
+    return continents
+
+def generate_continents_by_area(total_land_area, min_continent_size=1_000_000):
+    num_continents = random.randint(5, 7)
     min_required_area = min_continent_size * num_continents
+    max_continent_area = total_land_area * 0.4
+
     if min_required_area > total_land_area:
         raise ValueError("Total land area is too small to allocate the minimum required area to each continent.")
 
     continents, remaining_land_area = allocate_minimum_sizes(num_continents, min_continent_size, total_land_area)
     continents = distribute_remaining_land(continents, remaining_land_area)
+    continents = redistribute_excess_area(continents, max_continent_area)
     continents = [Continent(size=round(continent)) for continent in continents]
+
     return continents
 
-def generate_continents():
+def generate_continents() -> list[Continent]:
     available_surface_area = 510_100_000
 
     percent_land = random.randint(15, 45) / 100
@@ -48,6 +72,7 @@ def generate_continents():
     print(total_land_area, continents)
     
     for continent in continents:
+        continent.world_code = str(uuid.uuid4())
         remaining_land_area = continent.size
 
         while remaining_land_area >= 300:
@@ -60,8 +85,14 @@ def generate_continents():
     
     return continents
 
-gen_count = generate_continents()
-for continent in gen_count:
-    print(f"Continent Size: {continent.size} sqkm, Number of Countries: {len(continent.countries)}")
+# generated_continents = generate_continents()
+# country_count = sum([len(continent.countries) for continent in generated_continents])
+
+""" for continent in generated_continents:
+    repository.create_node(continent)
+   
+    print(f"Continent {continent.world_code} Size: {continent.size} sqkm, Number of Countries: {len(continent.countries)}")
     for country in continent.countries:
         print(f"  Country Size: {country.size} sqkm, Population: {country.population}, Density: {country.density}")
+print(f"Continents: {len(generated_continents)} with {country_count} countries")
+ """

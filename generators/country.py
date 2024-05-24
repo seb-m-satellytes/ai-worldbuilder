@@ -4,7 +4,7 @@ import uuid
 from models.country import Country
     
 def generate_country(remaining_land_area):
-    size_min, size_max, size_skew = 300, 10_000_000, 0.58
+    size_min, size_max, size_skew = 1000, 10_000_000, 0.25
     population_min, population_max = 25_000, 500_000_000
     density_min, density_max = 10, 20_000
 
@@ -27,7 +27,7 @@ def generate_country(remaining_land_area):
     # Check if population is within the given range
     if population_min <= population <= population_max and density_min <= density <= density_max:
         return Country(
-            world_code=str(uuid.uuid4())[:8],
+            world_code=str(uuid.uuid4()),
             name=None,
             size=round(size),
             population=round(population),
