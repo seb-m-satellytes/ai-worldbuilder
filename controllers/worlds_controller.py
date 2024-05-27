@@ -25,21 +25,23 @@ def create_world():
 @world_blueprint.route("/worlds/<string:world_id>/generate_continents", methods=['POST'])
 def generate_continents_route(world_id: str):
     try:
-        persist = request.args.get('PERSIST', False)
+        persist_flag = request.args.get('SKIP_SAVE', False)
+        generate_countries_flag = request.args.get('GENERATE_COUNTRIES', False)
 
-        continents = generate_continents(generate_countries=False)
+        continents = generate_continents(
+            generate_countries=generate_countries_flag)
 
-        return jsonify({
-            "message": "Continents generated successfully!",
-            "data": [continent.model_dump() for continent in continents]
-        }), 200
+        global_population = 0
 
-        for continent in continents:
-            continent_without_countries = continent.model_copy()
+        if persist_flag:
+            for continent in continents:
+                global_population += sum(
+                    country.population for country in continent.countries)
 
-            del continent_without_countries.countries
+                continent_without_countries = continent.model_copy()
 
-            if persist:
+                del continent_without_countries.countries
+
                 repository.create_node(continent_without_countries)
                 repository.create_relationship(
                     World, world_id, Continent, continent.world_code, "HAS_CONTINENT")
@@ -51,6 +53,7 @@ def generate_continents_route(world_id: str):
 
         return jsonify({
             "message": "Continents generated successfully!",
+            "global_population": f"{global_population:_}",
             "data": [continent.model_dump() for continent in continents]
         }), 200
     except Exception as e:

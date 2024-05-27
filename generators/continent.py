@@ -1,6 +1,5 @@
 import random
 import uuid
-import logging
 
 from generators.country import generate_country
 from models.continent import Continent
@@ -60,14 +59,6 @@ def generate_continents_by_area(total_land_area, min_continent_size=1_000_000) -
     continents = redistribute_excess_area(continents, max_continent_area)
 
     return continents
-    # South america 17_840_000
-    # Africa 30_370_000
-    # North america 24_709_000
-    # Asia 44_579_000
-    # Europe 10_180_000
-    # Australia 8_600_000
-
-    # < 10, 10-25 , 25-40 , > 40
 
 
 def set_category_and_coordinates(continents) -> list[Continent]:
@@ -82,8 +73,10 @@ def set_category_and_coordinates(continents) -> list[Continent]:
         s_coordinates = [(3, 3), (2, 2), (1, 1), (0, 0),
                          (-1, -1), (-2, -2), (-3, -3)]
         m_coordinates = [(3, 2), (2, 1), (1, 0), (0, -1), (-1, -2), (-2, -3)]
-        l_coordinates = [(3, 1), (2, 0), (1, -1), (0, -2), (-1, -3)]
-        xl_coordinates = [(3, 0), (2, -1), (1, -2), (0, -3)]
+        l_coordinates = [(3, 2, 1), (2, 1, 0), (1, 0, -1),
+                         (0, -1, -2), (-1, -2, -3)]
+        xl_coordinates = [(3, 2, 1, 0), (2, 1, 0, -1),
+                          (1, 0, -1, -2), (0, -1, -2, -3)]
 
         if continent < size_s:
             category = "small"
@@ -99,15 +92,16 @@ def set_category_and_coordinates(continents) -> list[Continent]:
             coordinated_at = random.choice(xl_coordinates)
 
         north_bound = coordinated_at[0]
-        south_bound = coordinated_at[1]
+        south_bound = coordinated_at[-1]
 
         # use a 20% chance that the continent is an island chain
         is_island = random.choice([True, False, False, False, False])
 
         continents_models.append(Continent(
-            size=round(continent),
             world_code=str(uuid.uuid4()),
+            size=round(continent),
             category=category,
+            coordinated_at=coordinated_at,
             north_bound=north_bound,
             south_bound=south_bound,
             is_island=is_island
@@ -127,14 +121,12 @@ def generate_continents(generate_countries: bool) -> list[Continent]:
     continents = generate_continents_by_area(total_land_area)
     continents_as_models = set_category_and_coordinates(continents)
 
-    logging.info(f"Generated continents: {continents_as_models}")
-
     for continent in continents_as_models:
         remaining_land_area = continent.size
 
         if generate_countries:
             while remaining_land_area >= 300:
-                country = generate_country(remaining_land_area)
+                country = generate_country(remaining_land_area, continent)
                 if country and country.size <= remaining_land_area:
                     continent.countries.append(country)
                     remaining_land_area -= country.size
