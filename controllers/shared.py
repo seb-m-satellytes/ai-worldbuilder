@@ -1,12 +1,13 @@
 import traceback
 import uuid
+from typing import Type
 from flask import request, jsonify
 from pydantic import ValidationError
 from pydantic import BaseModel
-from typing import Type
 from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
+
 
 def validate_request(request, model_class):
     data = request.json
@@ -50,7 +51,7 @@ def shared_create_node(request, model_class: Type[BaseModel]):
         new_node = validate_request(request, model_class)
     except ValueError as e:
         return jsonify({"message": str(e)}), 400
-   
+
     try:
         if not new_node.world_code:
             new_node.world_code = str(uuid.uuid4())
@@ -61,6 +62,7 @@ def shared_create_node(request, model_class: Type[BaseModel]):
         tb = traceback.format_exc()
         return jsonify({"message": str(e), "trace": tb}), 500
 
+
 def shared_delete_node(model_class: Type[BaseModel], world_code: str):
     try:
         repository.delete_node(model_class, world_code)
@@ -69,10 +71,11 @@ def shared_delete_node(model_class: Type[BaseModel], world_code: str):
         tb = traceback.format_exc()
         return jsonify({"message": str(e), "trace": tb}), 500
 
+
 def shared_delete_all_nodes(model_class: Type[BaseModel]):
     try:
         repository.delete_all_nodes(model_class)
-        return jsonify({'message': 'All nodes deleted successfully'})
+        return jsonify({"message": "All nodes deleted successfully"})
     except Exception as e:
         tb = traceback.format_exc()
-        return jsonify({'error': 'Failed to delete nodes', 'trace': tb}), 500
+        return jsonify({"error": f"Failed to delete nodes: {e}", 'trace': tb}), 500
