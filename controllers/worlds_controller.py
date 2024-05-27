@@ -1,6 +1,9 @@
 import traceback
 from flask import request, jsonify, Blueprint
-from controllers.shared import shared_get_nodes, shared_create_node
+from controllers.shared import (
+    shared_get_children_by_relationship,
+    shared_get_nodes,
+    shared_create_node)
 from models.world import World
 from models.continent import Continent
 from models.country import Country
@@ -17,6 +20,11 @@ def get_worlds():
     return shared_get_nodes(World)
 
 
+@world_blueprint.route("/worlds/<string:world_id>/continents", methods=['GET'])
+def get_continents(world_id: str):
+    return shared_get_children_by_relationship(World, world_id, "HAS_CONTINENT", Continent)
+
+
 @world_blueprint.route("/worlds", methods=['POST'])
 def create_world():
     return shared_create_node(request, World)
@@ -25,15 +33,15 @@ def create_world():
 @world_blueprint.route("/worlds/<string:world_id>/generate_continents", methods=['POST'])
 def generate_continents_route(world_id: str):
     try:
-        persist_flag = request.args.get('SKIP_SAVE', False)
-        generate_countries_flag = request.args.get('GENERATE_COUNTRIES', False)
+        skip_save_flag = request.args.get('SKIP_SAVE', False)
+        skip_countries_flag = request.args.get('SKIP_COUNTRIES', False)
 
         continents = generate_continents(
-            generate_countries=generate_countries_flag)
+            generate_countries=not skip_countries_flag)
 
         global_population = 0
 
-        if persist_flag:
+        if not skip_save_flag:
             for continent in continents:
                 global_population += sum(
                     country.population for country in continent.countries)
@@ -56,6 +64,18 @@ def generate_continents_route(world_id: str):
             "global_population": f"{global_population:_}",
             "data": [continent.model_dump() for continent in continents]
         }), 200
+    except Exception as e:
+        tb = traceback.format_exc()
+        return jsonify({"message": str(e), "trace": tb}), 500
+
+
+@world_blueprint.route("/worlds/<string:world_id>/continents", methods=['DELETE'])
+def delete_continents(world_id: str):
+    try:
+        repository.delete_children_with_relationship(
+            World, world_id, Continent, "HAS_CONTINENT")
+
+        return jsonify({"message": "Continents deleted successfully!"}), 200
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": str(e), "trace": tb}), 500

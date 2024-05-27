@@ -2,6 +2,7 @@ from typing import Type
 from pydantic import BaseModel
 from utils.database import database, driver
 
+
 class Neo4jRepository:
     def __init__(self):
         self.driver = driver
@@ -24,17 +25,18 @@ class Neo4jRepository:
 
         except Exception as e:
             raise e
-        
+
     def get_node_by_id(self, model_class: Type[BaseModel], node_id: int):
         model_name = model_class.__name__
-        
+
         try:
             query = f"""
             MATCH (node:{model_name} {{world_code: $node_id}})
             RETURN node
             """
-            records, _, _ = self.driver.execute_query(query, node_id=node_id, database_=database)
-            
+            records, _, _ = self.driver.execute_query(
+                query, node_id=node_id, database_=database)
+
             if records and records[0]:
                 record = records[0]
                 node_properties = record.data()["node"]
@@ -43,17 +45,18 @@ class Neo4jRepository:
                 return None
         except Exception as e:
             raise e
-  
+
     def get_related_nodes(self, model_class: Type[BaseModel], node_id: int, relationship: str):
         model_name = model_class.__name__
-        
+
         try:
             query = f"""
             MATCH (node:{model_name} {{world_code: $node_id}})-[:{relationship}]->(related_node)
             RETURN related_node
             """
 
-            records, summary, keys = self.driver.execute_query(query, database_=database, node_id=node_id)
+            records, summary, keys = self.driver.execute_query(
+                query, database_=database, node_id=node_id)
 
             nodes = []
             for record in records:
@@ -67,7 +70,8 @@ class Neo4jRepository:
         try:
             model_name = model.__class__.__name__
             attributes = model.model_dump()
-            attributes_keys = ', '.join(f"{key}: ${key}" for key in attributes.keys())
+            attributes_keys = ', '.join(
+                f"{key}: ${key}" for key in attributes.keys())
 
             query = f"""
             CREATE (node:{model_name} {{{attributes_keys}}})
@@ -91,7 +95,13 @@ class Neo4jRepository:
         except Exception as e:
             raise e
 
-    def delete_children_with_relationship(self, parent_class: Type[BaseModel], parent_id: int, child_class: Type[BaseModel], relationship: str):
+    def delete_children_with_relationship(
+        self,
+        parent_class: Type[BaseModel],
+        parent_id: int,
+        child_class: Type[BaseModel],
+        relationship: str
+    ):
         try:
             parent_class_name = parent_class.__name__
             child_class_name = child_class.__name__
@@ -102,18 +112,31 @@ class Neo4jRepository:
             """
 
             return self.driver.execute_query(
-                query, 
-                parent_id=parent_id, 
+                query,
+                parent_id=parent_id,
                 database_=database)
         except Exception as e:
             raise e
-            
+
     def delete_all_nodes(self, model_class: Type[BaseModel]):
         try:
             model_name = model_class.__name__
 
             query = f"""
             MATCH (node:{model_name})
+            DETACH DELETE node
+            """
+            return self.driver.execute_query(query, database_=database)
+        except Exception as e:
+            raise e
+
+    def delete_orphans_without_relationship(self, model_class: Type[BaseModel], relationship: str):
+        try:
+            model_name = model_class.__name__
+
+            query = f"""
+            MATCH (node:{model_name})
+            WHERE NOT (node)-[:{relationship}]-()
             DETACH DELETE node
             """
             return self.driver.execute_query(query, database_=database)

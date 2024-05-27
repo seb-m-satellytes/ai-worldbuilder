@@ -27,7 +27,7 @@ continent (o)
 -
 country (o)
 ├── region (o)
-│   ├── metropolis
+│   ├── metropolis (0)
 │   │   ├── district (o)
 │   │   │   └── neighborhood
 │   │   ├── citizen

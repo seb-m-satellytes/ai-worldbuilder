@@ -1,7 +1,7 @@
 import traceback
 import uuid
 from typing import Type
-from flask import request, jsonify
+from flask import jsonify
 from pydantic import ValidationError
 from pydantic import BaseModel
 from repository.neo4j_repository import Neo4jRepository
@@ -27,8 +27,37 @@ def shared_get_nodes(model_class: Type[BaseModel]):
 
         if nodes:
             return jsonify({"message": f"Found {len(nodes)} nodes.", "data": nodes}), 200
-        else:
-            return jsonify({"message": "No results found!", "data": []}), 404
+
+        return jsonify({"message": "No results found!", "data": []}), 404
+    except Exception as e:
+        tb = traceback.format_exc()
+        return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
+
+
+def shared_get_children_by_relationship(
+    base_model_class: Type[BaseModel],
+    world_code: str,
+    relationship: str,
+    child_model_class: Type[BaseModel]
+):
+    try:
+        # Retrieve the continent from the database
+        base_node = repository.get_node_by_id(base_model_class, world_code)
+
+        if base_node is None:
+            return jsonify({'error': f'{base_model_class.__name__} not found'}), 404
+
+        # Retrieve all countries of the continent
+        node_id = base_node.get('world_code')
+        child_nodes = repository.get_related_nodes(
+            base_model_class, node_id, relationship)
+
+        if child_nodes:
+            return jsonify({
+                "message": f"Found {len(child_nodes)} {child_model_class.__name__}(s).",
+                "data": child_nodes}), 200
+
+        return jsonify({"message": "No results found!", "data": []}), 404
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
@@ -39,8 +68,8 @@ def shared_get_node_by_world_id(model_class: Type[BaseModel], world_code: str):
         node = repository.get_node_by_id(model_class, world_code)
         if node:
             return jsonify({"message": "Node found.", "data": node}), 200
-        else:
-            return jsonify({"message": "Node not found.", "data": {}}), 404
+
+        return jsonify({"message": "Node not found.", "data": {}}), 404
     except Exception as e:
         tb = traceback.format_exc()
         return jsonify({"message": "Failure when getting node.", "data": str(e), "trace": tb}), 500
