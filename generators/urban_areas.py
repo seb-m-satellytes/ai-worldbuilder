@@ -1,7 +1,10 @@
 import random
+import uuid
 import numpy as np
 from models.metropolis import Metropolis
 from models.city import City
+from models.region import Region
+from models.village import Village
 from models.town import Town
 from repository.neo4j_repository import Neo4jRepository
 
@@ -128,7 +131,7 @@ def distribute_villages(total_population):
     return villages, village_population_absolute
 
 
-def distribute_population(total_population: int):
+def distribute_population(total_population: int) -> list[list[int]]:
     regional_type = select_regional_type()
 
     metropolises, metropolitan_population_absolute = distribute_metropolises(
@@ -160,23 +163,74 @@ def distribute_population(total_population: int):
     return [metropolises, cities, towns, villages]
 
 
-def create_urban_entries(total_population: int):
+def create_urban_entries(total_population: int, region_code: str):
     metropolises, cities, towns, villages = distribute_population(
         total_population)
 
+    metropolises_nodes = []
+    cities_nodes = []
+    towns_nodes = []
+    villages_nodes = []
+
     for metropolis in metropolises:
-        print(f"Metropolis: {metropolis}")
-        metropolis_node = Metropolis(population=metropolis)
-        repository.create_node(metropolis_node)
+        metropolis_node = Metropolis(
+            world_code=str(uuid.uuid4()),
+            population=metropolis)
+
+        print(f"Metropolis: {metropolis_node.model_dump()}")
+
+        try:
+            repository.create_node(metropolis_node)
+            repository.create_relationship(
+                Region, region_code, Metropolis, metropolis_node.world_code, "HAS_URBAN_AREA"
+            )
+            metropolises_nodes.append(metropolis_node)
+        except Exception as e:
+            raise e
 
     for city in cities:
         print(f"City: {city}")
-        city_node = City(population=city)
-        repository.create_node(city_node)
+        city_node = City(
+            world_code=str(uuid.uuid4()),
+            population=city)
+
+        try:
+            repository.create_node(city_node)
+            repository.create_relationship(
+                Region, region_code, City, city_node.world_code, "HAS_URBAN_AREA"
+            )
+            cities_nodes.append(city_node)
+        except Exception as e:
+            print(e)
 
     for town in towns:
         print(f"Town: {town}")
-        town_node = Town(population=town)
-        repository.create_node(town_node)
+        town_node = Town(
+            world_code=str(uuid.uuid4()),
+            population=town)
 
-# distribute_population(32_129_170)
+        try:
+            repository.create_node(town_node)
+            repository.create_relationship(
+                Region, region_code, Town, town_node.world_code, "HAS_URBAN_AREA"
+            )
+            towns_nodes.append(town_node)
+        except Exception as e:
+            print(e)
+
+    for village in villages:
+        print(f"Village: {village}")
+        village_node = Village(
+            world_code=str(uuid.uuid4()),
+            population=village)
+
+        try:
+            repository.create_node(village_node)
+            repository.create_relationship(
+                Region, region_code, Village, village_node.world_code, "HAS_URBAN_AREA"
+            )
+            villages_nodes.append(village_node)
+        except Exception as e:
+            print(e)
+
+    return [metropolises_nodes, cities_nodes, towns_nodes, villages_nodes]

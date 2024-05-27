@@ -1,8 +1,9 @@
 import traceback
 from flask import request, jsonify, Blueprint
 from controllers.shared import shared_get_node_by_world_id, shared_get_nodes, shared_create_node
+from models import city
 from models.region import Region
-from generators.urban_areas import distribute_population
+from generators.urban_areas import create_urban_entries
 from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
@@ -33,8 +34,17 @@ def create_urban_areas(region_id):
             return jsonify({"error": "Region not found"}), 404
 
         # Generate urban areas
-        urban_areas = distribute_population(region.get("population"))
-        return jsonify({"message": "Created Urban Areas", "data": urban_areas}), 201
+        metropolises, cities, towns, villages = create_urban_entries(
+            region.get("population"), region.get("world_code"))
+        return jsonify({
+            "message": "Created Urban Areas",
+            "data": {
+                "metropolises": [metropolis.model_dump() for metropolis in metropolises],
+                "cities": [city.model_dump() for city in cities],
+                "towns": [town.model_dump() for town in towns],
+                "villages": [village.model_dump() for village in villages]
+            }
+        }), 201
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500

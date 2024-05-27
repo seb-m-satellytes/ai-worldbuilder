@@ -1,5 +1,5 @@
 from models.settlement import Settlement
 
 
-class Town(Settlement):
+class Village(Settlement):
     pass
