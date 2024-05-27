@@ -46,16 +46,30 @@ class Neo4jRepository:
         except Exception as e:
             raise e
 
-    def get_related_nodes(self, model_class: Type[BaseModel], node_id: int, relationship: str):
+    def get_related_nodes(
+        self,
+        model_class: Type[BaseModel],
+        node_id: int,
+        relationship: str,
+        related_model_class: Type[BaseModel] = None
+    ):
         model_name = model_class.__name__
 
         try:
-            query = f"""
-            MATCH (node:{model_name} {{world_code: $node_id}})-[:{relationship}]->(related_node)
-            RETURN related_node
-            """
+            if related_model_class is None:
+                related_model_name = ""
+                query = f"""
+                MATCH (node:{model_name} {{world_code: $node_id}})-[:{relationship}]->(related_node)
+                RETURN related_node
+                """
+            else:
+                related_model_name = related_model_class.__name__
+                query = f"""
+                MATCH (node:{model_name} {{world_code: $node_id}})-[:{relationship}]->(related_node:{related_model_name})
+                RETURN related_node
+                """
 
-            records, summary, keys = self.driver.execute_query(
+            records, _, _ = self.driver.execute_query(
                 query, database_=database, node_id=node_id)
 
             nodes = []

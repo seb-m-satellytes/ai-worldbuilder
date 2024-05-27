@@ -2,6 +2,7 @@ import traceback
 from flask import request, jsonify, Blueprint
 from controllers.shared import (
     shared_get_children_by_relationship,
+    shared_get_node_by_world_id,
     shared_get_nodes,
     shared_create_node)
 from models.world import World
@@ -18,6 +19,11 @@ world_blueprint = Blueprint('world', __name__)
 @world_blueprint.route("/worlds", methods=['GET'])
 def get_worlds():
     return shared_get_nodes(World)
+
+
+@world_blueprint.route("/worlds/<string:world_id>", methods=['GET'])
+def get_world(world_id: str):
+    return shared_get_node_by_world_id(World, world_id)
 
 
 @world_blueprint.route("/worlds/<string:world_id>/continents", methods=['GET'])

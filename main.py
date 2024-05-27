@@ -3,7 +3,7 @@ import os
 import sys
 from flask import Flask
 from controllers.healthcheck_controller import healthcheck_blueprint
-from controllers.cities_controller import city_blueprint
+from controllers.settlements_controller import settlement_blueprint
 from controllers.countries_controller import country_blueprint
 from controllers.worlds_controller import world_blueprint
 from controllers.continents_controller import continent_blueprint
@@ -14,10 +14,11 @@ app = Flask(__name__)
 
 URL_PREFIX = '/api/v1'
 
+
 def register_blueprints(app_instance):
     blueprints = [
         (healthcheck_blueprint, URL_PREFIX),
-        (city_blueprint, URL_PREFIX),
+        (settlement_blueprint, URL_PREFIX),
         (country_blueprint, URL_PREFIX),
         (world_blueprint, URL_PREFIX),
         (continent_blueprint, URL_PREFIX),
@@ -26,6 +27,7 @@ def register_blueprints(app_instance):
 
     for blueprint, url_prefix in blueprints:
         app_instance.register_blueprint(blueprint, url_prefix=url_prefix)
+
 
 register_blueprints(app)
 

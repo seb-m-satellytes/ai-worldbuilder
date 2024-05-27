@@ -4,6 +4,7 @@ from models.country import Country
 from models.region import Region
 from controllers.shared import (
     shared_get_nodes,
+    shared_get_node_by_world_id,
     shared_create_node,
     shared_get_children_by_relationship,
     shared_delete_node,
@@ -19,6 +20,11 @@ country_blueprint = Blueprint('country', __name__)
 @country_blueprint.route("/countries", methods=['GET'])
 def get_countries():
     return shared_get_nodes(Country)
+
+
+@country_blueprint.route("/countries/<string:country_id>", methods=['GET'])
+def get_country(country_id: str):
+    return shared_get_node_by_world_id(Country, country_id)
 
 
 @country_blueprint.route("/countries", methods=['POST'])

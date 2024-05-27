@@ -1,8 +1,13 @@
 import traceback
-import logging
 from flask import request, jsonify, Blueprint
-from controllers.shared import shared_get_nodes, shared_create_node, shared_delete_node, shared_get_node_by_world_id
+from controllers.shared import (
+    shared_get_children_by_relationship,
+    shared_get_nodes,
+    shared_create_node,
+    shared_delete_node,
+    shared_get_node_by_world_id)
 from models.continent import Continent
+from models.country import Country
 from repository.neo4j_repository import Neo4jRepository
 
 repository: Neo4jRepository = Neo4jRepository()
@@ -32,22 +37,4 @@ def delete_continent(continent_id: str):
 
 @continent_blueprint.route("/continents/<string:continent_id>/countries", methods=['GET'])
 def get_countries(continent_id: str):
-    try:
-        # Retrieve the continent from the database
-        continent = repository.get_node_by_id(Continent, continent_id)
-
-        if continent is None:
-            return jsonify({'error': 'Continent not found'}), 404
-
-        # Retrieve all countries of the continent
-        node_id = continent.get('world_code')
-        countries = repository.get_related_nodes(
-            Continent, node_id, 'HAS_COUNTRY')
-
-        if countries:
-            return jsonify({"message": f"Found {len(countries)} countries.", "data": countries}), 200
-
-        return jsonify({"message": "No results found!", "data": []}), 404
-    except Exception as e:
-        tb = traceback.format_exc()
-        return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
+    return shared_get_children_by_relationship(Continent, continent_id, "HAS_COUNTRY", Country)

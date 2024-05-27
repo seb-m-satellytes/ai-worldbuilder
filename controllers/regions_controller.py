@@ -1,7 +1,14 @@
 import traceback
 from flask import request, jsonify, Blueprint
-from controllers.shared import shared_get_node_by_world_id, shared_get_nodes, shared_create_node
-from models import city
+from controllers.shared import (
+    shared_get_node_by_world_id,
+    shared_get_nodes,
+    shared_create_node
+)
+from models.city import City
+from models.metropolis import Metropolis
+from models.town import Town
+from models.village import Village
 from models.region import Region
 from generators.urban_areas import create_urban_entries
 from repository.neo4j_repository import Neo4jRepository
@@ -24,6 +31,42 @@ def create_region():
 @region_blueprint.route("/regions/<string:region_id>", methods=['GET'])
 def get_region(region_id):
     return shared_get_node_by_world_id(Region, region_id)
+
+
+@region_blueprint.route("/regions/<string:region_id>/settlements", methods=['GET'])
+def get_settlements(region_id):
+    settlement_type_models = {
+        "city": City,
+        "town": Town,
+        "metropolis": Metropolis,
+        "village": Village,
+    }
+    try:
+        base_node = repository.get_node_by_id(Region, region_id)
+
+        if base_node is None:
+            return jsonify({'error': f'{Region.__name__} not found'}), 404
+
+        results = {}
+
+        for settlement_type, model_class in settlement_type_models.items():
+            child_nodes = repository.get_related_nodes(
+                Region, region_id, "HAS_URBAN_AREA", model_class)
+
+            if child_nodes:
+                results[settlement_type] = child_nodes
+
+        if results:
+            return jsonify({
+                "message": f"Found {len(results)} urban areas.",
+                "data": results
+            }), 200
+
+        return jsonify({"message": "No results found!", "data": []}), 404
+
+    except Exception as e:
+        tb = traceback.format_exc()
+        return jsonify({"message": "Failure when getting nodes.", "data": str(e), "trace": tb}), 500
 
 
 @region_blueprint.route("/regions/<string:region_id>/create_urban_areas", methods=['POST'])
