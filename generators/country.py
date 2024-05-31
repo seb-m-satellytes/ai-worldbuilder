@@ -6,9 +6,7 @@ from models.country import Country
 from models.continent import Continent
 
 
-def get_climate_zone(continent: Continent):
-    climate_coordinates = random.choice(continent.coordinated_at)
-
+def get_climate_zone(climate_coordinates: int):
     if climate_coordinates in (3, -3):
         return "arctic"
 
@@ -47,7 +45,8 @@ def generate_country(remaining_land_area: int, continent: Continent):
     # Calculate population
     population = size * density
 
-    climate_zone = get_climate_zone(continent)
+    climate_coordinates = random.choice(continent.coordinated_at)
+    climate_zone = get_climate_zone(climate_coordinates)
 
     # Check if population is within the given range
     if population_min <= population <= population_max and density_min <= density <= density_max:
@@ -57,6 +56,7 @@ def generate_country(remaining_land_area: int, continent: Continent):
             size=int(round(size)),
             population=int(round(population)),
             density=int(round(density)),
+            located_at=climate_coordinates,
             climate_zone=climate_zone
         )
 

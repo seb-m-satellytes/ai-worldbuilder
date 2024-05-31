@@ -1,5 +1,9 @@
 from flask import request, Blueprint, jsonify
-from controllers.shared import shared_get_nodes, shared_create_node, shared_get_node_by_world_id
+from controllers.shared import (
+    shared_delete_all_nodes,
+    shared_get_nodes,
+    shared_get_node_by_world_id
+)
 from models.city import City
 from models.metropolis import Metropolis
 from models.town import Town
@@ -41,8 +45,8 @@ def get_settlement(settlement_id: str):
         return shared_get_node_by_world_id(model_class, settlement_id)
 
 
-@settlement_blueprint.route("/settlements", methods=['POST'])
-def create_settlement():
+@settlement_blueprint.route("/settlements", methods=['DELETE'])
+def delete_settlement():
     settlement_type = request.args.get('settlement_type')
     if not settlement_type:
         return jsonify({'error': 'No settlement_type provided'}), 400
@@ -52,4 +56,4 @@ def create_settlement():
     if not model_class:
         return jsonify({'error': 'Invalid settlement_type provided'}), 400
 
-    return shared_create_node(request, model_class)
+    return shared_delete_all_nodes(model_class)
